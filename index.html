@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantfury Dividend Radar & Risk Hub</title>
+    <style>
+        :root {
+            --bg-main: #0a0e14;
+            --bg-card: #111622;
+            --bg-input: #171d2c;
+            --text-main: #ffffff;
+            --text-muted: #8492a6;
+            --primary: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #20293a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 24px; line-height: 1.5; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        
+        header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        header h1 { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        
+        .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 900px) { .grid-dashboard { grid-template-columns: 1fr; } }
+        
+        .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+        .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select {
+            background-color: var(--bg-input); border: 1px solid var(--border); border-radius: 8px;
+            color: #fff; padding: 12px; font-size: 15px; outline: none; transition: border 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .metric-box { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .metric-title { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .metric-value { font-size: 32px; font-weight: 700; color: #fff; margin: 4px 0; }
+        
+        .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; width: max-content; }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        tbody tr:hover { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .btn {
+            background-color: var(--primary); color: #000; border: none; padding: 12px 20px;
+            border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background-color: var(--success); color: #fff; }
+        .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; border-radius: 6px; font-size: 12px; }
+        .btn-danger:hover { background-color: rgba(239, 68, 68, 0.1); }
+        .btn-reset { background-color: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; width: max-content; margin-top: 12px;}
+        .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+        .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+        @media (max-width: 600px) { .price-grid { grid-template-columns: 1fr 1fr; } }
+        
+        .price-tile { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .price-tile span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .price-tile input { padding: 6px; font-size: 14px; width: 100%; }
+
+        .progress-container { margin-top: 16px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+        .progress-bar { background-color: var(--border); height: 8px; border-radius: 4px; overflow: hidden; }
+        .progress-fill { background-color: var(--primary); height: 100%; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h1>📊 Quantfury Dividend Radar & Risk Hub</h1>
+                <p>O jeito ideal e profissional de gerenciar renda passiva sem correr riscos de liquidação.</p>
+            </div>
+            <button class="btn-reset" onclick="zerarTudo()">⚠️ Resetar Aplicativo</button>
+        </div>
+    </header>
+
+    <div class="grid-dashboard">
+        <!-- CONTROLES GLOBAIS -->
+        <div class="card">
+            <h2>⚙️ Configurações da Conta & Mercado</h2>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Garantia Depositada em Dólar (USD Cash)</label>
+                <input type="number" id="capital" value="150.00" step="0.01" oninput="salvarEDeclarar()">
+            </div>
+            
+            <label>Preços de Mercado Atuais ($)</label>
+            <div class="price-grid" id="prices-wrapper"></div>
+        </div>
+
+        <!-- DIAGNÓSTICO E PREVISÃO DE PROVENTOS -->
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2>🛡️ Diagnóstico de Alavancagem & Risco</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+                    <div>
+                        <div class="metric-title">Total Alocado em Tela</div>
+                        <div class="metric-value" id="lbl-total">$0.00</div>
+                    </div>
+                    <div>
+                        <div class="metric-title">Risco de Liquidação</div>
+                        <div style="margin-top: 8px;"><span id="lbl-status" class="badge">1.0x</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px;">
+                    <div class="metric-title">Margem para Queda Livre de Mercado</div>
+                    <div class="metric-value" id="lbl-margin" style="font-size: 22px; color: var(--primary);">100%</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <hr style="border-color: var(--border); margin: 16px 0;">
+                <h2>🎯 Metas de Renda Mensal Líquida</h2>
+                <div style="margin-bottom: 12px;">
+                    <div class="progress-label">
+                        <span id="lbl-meta1-text">Meta 1 ($20/mês)</span>
+                        <span id="lbl-meta1-pct">0%</span>
+                    </div>
+                    <div class="progress-bar"><div id="bar-meta1" class="progress-fill"></div></div>
+                </div>
+                <div>
+                    <div class="progress-label">
+                        <span id="lbl-meta2-text">Meta 2 ($50/mês)</span>
+                        <span id="lbl-meta2-pct">0%</span>
+                    </div>
+                    <div class="progress-bar"><div id="bar-meta2" class="progress-fill"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRADE DE ESTRATÉGIA PRINCIPAL -->
+    <div class="card" style="margin-bottom: 24px;">
+        <h2>🎯 Alocação e Ponto de Entrada Perfeito</h2>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: -10px; margin-bottom: 16px;">O sistema compara o Preço Médio ao preço atual de tela para identificar janelas de desconto ideais.</p>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ativo</th>
+                        <th>Preço Mercado</th>
+                        <th>Minhas Cotas</th>
+                        <th>Preço Médio (PM)</th>
+                        <th>Valor Alocado</th>
+                        <th>Peso Atual</th>
+                        <th>Momento de Entrada</th>
+                    </tr>
+                </thead>
+                <tbody id="assets-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- HISTÓRICO DE APORTES -->
+    <div class="card">
+        <div class="flex-header">
+            <h2>📜 Histórico de Ordens & Lançamentos</h2>
+        </div>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: -10px; margin-bottom: 16px;">Sempre que fizer uma operação na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata.</p>
+        
+        <div class="flex-inputs" style="background: var(--bg-input); padding: 16px; border-radius: 8px; border: 1px solid var(--border); gap: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 12px; width: 100%; align-items: end;">
+                <div class="form-group">
+                    <label>Escolha o Ativo</label>
+                    <select id="log-ticker"></select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade de Cotas</label>
+                    <input type="number" step="0.0001" id="log-qty" placeholder="Ex: 0.52">
+                </div>
+                <div class="form-group">
+                    <label>Preço por Cota ($)</label>
+                    <input type="number" step="0.01" id="log-price" placeholder="Ex: 34.80">
+                </div>
+                <button class="btn btn-success" onclick="inserirOrdem()">Registrar Compra</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto; margin-top: 16px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data / Hora</th>
+                        <th>Ativo</th>
+                        <th>Cotas Compradas</th>
+                        <th>Preço Unitário</th>
+                        <th>Capital Injetado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="history-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configurações e rendimentos padrão dos ativos do usuário
+    const padraoAtivos = [
+        { ticker: "SCHD", precoMercado: 34.80, cotas: 3.01, precoMedio: 35.00, yield: 0.0313 },
+        { ticker: "JEPI", precoMercado: 57.22, cotas: 1.41, precoMedio: 57.00, yield: 0.0760 },
+        { ticker: "JEPQ", precoMercado: 59.87, cotas: 1.01, precoMedio: 59.20, yield: 0.1100 },
+        { ticker: "IEF",  precoMercado: 92.25, cotas: 0.58, precoMedio: 92.10, yield: 0.0397 }
+    ];
+
+    let carteira = JSON.parse(localStorage.getItem('radar_carteira')) || JSON.parse(JSON.stringify(padraoAtivos));
+    let historico = JSON.parse(localStorage.getItem('radar_historico')) || [];
+
+    function inicializar() {
+        const capitalSalvo = localStorage.getItem('radar_capital');
+        if (capitalSalvo) {
+            document.getElementById('capital').value = capitalSalvo;
+        }
+        montarPrecosInput();
+        sincronizarTelas();
+    }
+
+    function salvarEDeclarar() {
+        localStorage.setItem('radar_carteira', JSON.stringify(carteira));
+        localStorage.setItem('radar_historico', JSON.stringify(historico));
+        localStorage.setItem('radar_capital', document.getElementById('capital').value);
+        sincronizarTelas();
+    }
+
+    function montarPrecosInput() {
+        const wrapper = document.getElementById('prices-wrapper');
+        wrapper.innerHTML = '';
+        carteira.forEach((ativo, idx) => {
+            wrapper.innerHTML += `
+                <div class="price-tile">
+                    <span>${ativo.ticker}</span>
+                    <input type="number" step="0.01" value="${ativo.precoMercado.toFixed(2)}" oninput="alterarPrecoDeTela(${idx}, this.value)">
+                </div>
+            `;
+        });
+    }
+
+    function alterarPrecoDeTela(idx, val) {
+        carteira[idx].precoMercado = parseFloat(val) || 0;
+        salvarEDeclarar();
+    }
+
+    function mudarCotasColuna(idx, val) {
+        carteira[idx].cotas = parseFloat(val) || 0;
+        salvarEDeclarar();
+    }
+
+    function mudarPMColuna(idx, val) {
+        carteira[idx].precoMedio = parseFloat(val) || 0;
+        salvarEDeclarar();
+    }
+
+    function sincronizarTelas() {
+        const capital = parseFloat(document.getElementById('capital').value) || 0;
+        const tbodyAsset = document.getElementById('assets-tbody');
+        const selectTicker = document.getElementById('log-ticker');
+        
+        tbodyAsset.innerHTML = '';
+        selectTicker.innerHTML = '';
+
+        let totalAlocado = 0;
+        let dividendoAnualEstimado = 0;
+
+        carteira.forEach(a => {
+            totalAlocado += (a.cotas * a.precoMercado);
+            // Dividendos líquidos pós taxação na fonte de 30% nos EUA
+            dividendoAnualEstimado += (a.cotas * a.precoMercado * a.yield * 0.70);
+        });
+
+        const dividendosMensaisLiquidos = dividendoAnualEstimado / 12;
+
+        carteira.forEach((ativo, idx) => {
+            const totalItem = ativo.cotas * ativo.precoMercado;
+            const pesoItem = totalAlocado > 0 ? (totalItem / totalAlocado) * 100 : 0;
+            
+            let indicadorEntrada = '';
+            if (ativo.cotas === 0) {
+                indicadorEntrada = '<span class="badge" style="color:var(--text-muted);">Sem Posição</span>';
+            } else if (ativo.precoMercado < ativo.precoMedio) {
+                indicadorEntrada = '<span class="badge badge-success">🔥 Oportunidade</span>';
+            } else {
+                indicadorEntrada = '<span class="badge" style="background:rgba(255,255,255,0.03); color:var(--text-muted);">Aguardar</span>';
+            }
+
+            tbodyAsset.innerHTML += `
+                <tr>
+                    <td><b style="color:var(--primary); font-size:15px;">${ativo.ticker}</b></td>
+                    <td>$${ativo.precoMercado.toFixed(2)}</td>
+                    <td><input type="number" step="0.0001" value="${ativo.cotas}" style="width:100px; padding:6px;" oninput="mudarCotasColuna(${idx}, this.value)"></td>
+                    <td>$<input type="number" step="0.01" value="${ativo.precoMedio.toFixed(2)}" style="width:90px; padding:6px;" oninput="mudarPMColuna(${idx}, this.value)"></td>
+                    <td><b>$${totalItem.toFixed(2)}</b></td>
+                    <td>${pesoItem.toFixed(1)}%</td>
+                    <td>${indicadorEntrada}</td>
+                </tr>
+            `;
+
+            selectTicker.innerHTML += `<option value="${ativo.ticker}">${ativo.ticker}</option>`;
+        });
+
+        // Atualizar Diagnósticos Globais
+        document.getElementById('lbl-total').innerText = `$${totalAlocado.toFixed(2)}`;
+        
+        const alavancagem = capital > 0 ? (totalAlocado / capital) : 0;
+        const badgeStatus = document.getElementById('lbl-status');
+        badgeStatus.innerText = `${alavancagem.toFixed(1)}x Alavancado`;
+        badgeStatus.className = "badge";
+
+        if (alavancagem <= 1.05) {
+            badgeStatus.classList.add('badge-success');
+        } else if (alavancagem <= 2.1) {
+            badgeStatus.classList.add('badge-warning');
+        } else {
+            badgeStatus.classList.add('badge-danger');
+        }
+
+        const margemQueda = totalAlocado > 0 ? (capital / totalAlocado) * 100 : 100;
+        const lblMargin = document.getElementById('lbl-margin');
+        lblMargin.innerText = alavancagem <= 1 ? "Infinita (Sem risco 1:1)" : `${margemQueda.toFixed(1)}% de queda`;
+        lblMargin.style.color = margemQueda < 16 && alavancagem > 1 ? 'var(--danger)' : 'var(--success)';
+
+        // Atualizar Metas de Progresso Reais por Rendimento
+        const progMeta1 = Math.min((dividendosMensaisLiquidos / 20) * 100, 100);
+        const progMeta2 = Math.min((dividendosMensaisLiquidos / 50) * 100, 100);
+
+        document.getElementById('bar-meta1').style.width = `${progMeta1}%`;
+        document.getElementById('lbl-meta1-pct').innerText = `${progMeta1.toFixed(1)}%`;
+        document.getElementById('lbl-meta1-text').innerText = `Meta 1 ($20.00 líquido) - Atual: $${dividendosMensaisLiquidos.toFixed(2)}/mês`;
+
+        document.getElementById('bar-meta2').style.width = `${progMeta2}%`;
+        document.getElementById('lbl-meta2-pct').innerText = `${progMeta2.toFixed(1)}%`;
+        document.getElementById('lbl-meta2-text').innerText = `Meta 2 ($50.00 líquido) - Atual: $${dividendosMensaisLiquidos.toFixed(2)}/mês`;
+
+        renderizarHistoricoTabela();
+    }
+
+    function inserirOrdem() {
+        const ticker = document.getElementById('log-ticker').value;
+        const qtd = parseFloat(document.getElementById('log-qty').value) || 0;
+        const preco = parseFloat(document.getElementById('log-price').value) || 0;
+
+        if (qtd <= 0 || preco <= 0) {
+            alert("Por favor, insira valores válidos de cotas e preço.");
+            return;
+        }
+
+        const idx = carteira.findIndex(a => a.ticker === ticker);
+        if (idx > -1) {
+            const custoAntigo = carteira[idx].cotas * carteira[idx].precoMedio;
+            const custoNovo = qtd * preco;
+            
+            carteira[idx].cotas += qtd;
+            carteira[idx].precoMedio = (custoAntigo + custoNovo) / carteira[idx].cotas;
+        }
+
+        const timestamp = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+        historico.unshift({ id: Date.now(), data: timestamp, ticker, qtd, preco });
+
+        document.getElementById('log-qty').value = '';
+        document.getElementById('log-price').value = '';
+
+        salvarEDeclarar();
+    }
+
+    function apagarLog(id) {
+        const idxLog = historico.findIndex(l => l.id === id);
+        if (idxLog > -1) {
+            const log = historico[idxLog];
+            const idxA = carteira.findIndex(a => a.ticker === log.ticker);
+            
+            if (idxA > -1 && carteira[idxA].cotas >= log.qtd) {
+                const custoAtual = carteira[idxA].cotas * carteira[idxA].precoMedio;
+                const custoSub = log.qtd * log.preco;
+                carteira[idxA].cotas -= log.qtd;
+                carteira[idxA].precoMedio = carteira[idxA].cotas > 0 ? (custoAtual - custoSub) / carteira[idxA].cotas : carteira[idxA].precoMercado;
+            }
+            
+            historico.splice(idxLog, 1);
+            salvarEDeclarar();
+        }
+    }
+
+    function renderizarHistoricoTabela() {
+        const tbody = document.getElementById('history-tbody');
+        if (historico.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nenhum aporte registrado.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = '';
+        historico.forEach(log => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${log.data}</td>
+                    <td><span class="badge" style="background:rgba(56,189,248,0.1); color:var(--primary); font-weight:600;">${log.ticker}</span></td>
+                    <td>${log.qtd.toFixed(4)}</td>
+                    <td>$${log.preco.toFixed(2)}</td>
+                    <td style="color:var(--success); font-weight:600;">$${(log.qtd * log.preco).toFixed(2)}</td>
+                    <td><button class="btn-danger" onclick="apagarLog(${log.id})">Excluir</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function zerarTudo() {
+        if (confirm("Tem certeza absoluta que deseja limpar toda a memória do aplicativo e restaurar os valores originais?")) {
+            localStorage.clear();
+            carteira = JSON.parse(JSON.stringify(padraoAtivos));
+            historico = [];
+            document.getElementById('capital').value = "150.00";
+            montarPrecosInput();
+            salvarEDeclarar();
+        }
+    }
+
+    window.onload = inicializar;
+</script>
+</body>
+</html>
