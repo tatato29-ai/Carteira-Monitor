@@ -99,7 +99,7 @@
         <div class="card">
             <h2>⚙ Configurações da Conta & Mercado</h2>
             <div class="form-group">
-                <label>Garantia Deposita em Dólar (USD Cash)</label>
+                <label>Garantia Depositada em Dólar (USD Cash)</label>
                 <input type="number" id="capital" value="150" oninput="salvarDados(); calcularTudo();">
             </div>
             <h3>Preços de Mercado Atuais ($)</h3>
@@ -168,11 +168,11 @@
             </div>
             <div style="flex:1;">
                 <label>Quantidade de Cotas</label>
-                <input type="number" step="0.001" id="log-shares" placeholder="Ex: 0.25">
+                <input type="number" step="0.0001" id="log-shares" placeholder="Ex: 0.25">
             </div>
             <div style="flex:1;">
                 <label>Preço por Cota ($)</label>
-                <input type="number" step="0.01" id="log-price" placeholder="Ex: 56.24">
+                <input type="number" step="0.01" id="log-price" placeholder="Ex: 56.63">
             </div>
             <div style="flex:1; display:flex; align-items:flex-end;">
                 <button class="btn btn-success" style="width:100%; height:42px;" onclick="adicionarLancamento()">Registrar Compra</button>
@@ -195,24 +195,25 @@
 </div>
 
 <script>
-    // Inicialização idêntica com correções de escopo aplicadas
-    let carteira = JSON.parse(localStorage.getItem('radar_hub_carteira_v4')) || [
-        { ticker: "SCHD", precoMercado: 33.68, cotas: 1.26, precoMedio: 34.00, yield: 0.0313 },
-        { ticker: "JEPI", precoMercado: 56.24, cotas: 0.59, precoMedio: 56.50, yield: 0.076 },
-        { ticker: "JEPQ", precoMercado: 60.24, cotas: 0.42, precoMedio: 59.80, yield: 0.11 },
-        { ticker: "IEF",  precoMercado: 90.80, cotas: 0.24, precoMedio: 91.00, yield: 0.0397 }
+    // Inicialização idêntica carregando a nova carteira focada em dividendos reais e ajustados de hoje
+    let carteira = JSON.parse(localStorage.getItem('radar_hub_premium_carteira')) || [
+        { ticker: "O", precoMercado: 56.63, cotas: 0.00, precoMedio: 56.63, yield: 0.0572 },
+        { ticker: "KO", precoMercado: 88.13, cotas: 0.00, precoMedio: 88.13, yield: 0.024 },
+        { ticker: "JNJ", precoMercado: 269.98, cotas: 0.00, precoMedio: 269.98, yield: 0.0198 },
+        { ticker: "XOM", precoMercado: 163.18, cotas: 0.00, precoMedio: 163.18, yield: 0.0256 },
+        { ticker: "SCHD", precoMercado: 33.68, cotas: 0.00, precoMedio: 33.68, yield: 0.0313 }
     ];
 
-    let historico = JSON.parse(localStorage.getItem('radar_hub_historico_v4')) || [];
+    let historico = JSON.parse(localStorage.getItem('radar_hub_premium_historico')) || [];
 
     function salvarDados() {
-        localStorage.setItem('radar_hub_carteira_v4', JSON.stringify(carteira));
-        localStorage.setItem('radar_hub_historico_v4', JSON.stringify(historico));
-        localStorage.setItem('radar_hub_capital_v4', document.getElementById('capital').value);
+        localStorage.setItem('radar_hub_premium_carteira', JSON.stringify(carteira));
+        localStorage.setItem('radar_hub_premium_historico', JSON.stringify(historico));
+        localStorage.setItem('radar_hub_premium_capital', document.getElementById('capital').value);
     }
 
     function carregarDados() {
-        const capitalSalvo = localStorage.getItem('radar_hub_capital_v4');
+        const capitalSalvo = localStorage.getItem('radar_hub_premium_capital');
         if (capitalSalvo) document.getElementById('capital').value = capitalSalvo;
     }
 
@@ -229,8 +230,6 @@
         carteira.forEach(a => totalPortfolio += (a.cotas * a.precoMercado));
 
         carteira.forEach((ativo, index) => {
+            // Caixa de Preço no painel superior
             containerPrecos.innerHTML += `
                 <div class="form-group" style="display:inline-block; width:45%; margin-right:4%; margin-bottom:10px;">
-                    <label style="font-size:14px; color:var(--primary);">${ativo.ticker} ($)</label>
-                    <input type="number" step="0.01" value="${ativo.precoMercado}" oninput="atualizarPrecoMercado(${index}, this.value)">
-                </div>
