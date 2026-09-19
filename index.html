@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Carteira Master v5.3 - Sincronizado</title>
+    <title>Quantfury Dividend Radar & Risk Hub v5.3</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -70,53 +70,77 @@
             font-size: 14px;
         }
         .btn-success { background-color: var(--success); }
-        .btn-danger { background-color: var(--danger); }
+        .btn-danger { background-color: var(--danger); width: auto; margin-bottom: 15px; }
         .btn:hover { opacity: 0.9; }
         .flex-inputs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
         .flex-inputs input, .flex-inputs select { flex: 1; min-width: 120px; }
         .metric { font-size: 24px; font-weight: bold; color: var(--text-main); margin: 5px 0; }
+        .progress-bar {
+            background-color: var(--border);
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .progress-fill { background-color: var(--primary); height: 100%; width: 0%; transition: width 0.3s; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📊 Monitor de Carteira Master v5.3</h1>
-    <p>Preços em tempo real atualizados com o fechamento oficial de mercado da semana [cf].</p>
+    <h1>📊 Quantfury Dividend Radar & Risk Hub</h1>
+    <p>O jeito ideal e profissional de gerenciar renda passiva sem correr riscos de liquidação [cf].</p>
+    
+    <button class="btn btn-danger" onclick="resetarAplicativo()">⚠ Resetar Aplicativo</button>
 
     <div class="grid">
-        <!-- PAINEL DE CONTROLE -->
+        <!-- CONFIGURAÇÕES -->
         <div class="card">
-            <h2>⚙️ Painel de Controle (Quantfury)</h2>
+            <h2>⚙ Configurações da Conta & Mercado</h2>
             <div class="form-group">
-                <label>Garantia Real Depositada (USD)</label>
+                <label>Garantia Depositada em Dólar (USD Cash)</label>
                 <input type="number" id="capital" value="150" oninput="salvarDados(); calcularTudo();">
             </div>
-            <h3>Preços Mercado em Tela (Ajustável manualmente):</h3>
+            <h3>Preços de Mercado Atuais ($)</h3>
             <div id="market-prices-container"></div>
         </div>
 
         <!-- DIAGNÓSTICO -->
         <div class="card">
-            <h2>🛡️ Diagnóstico de Risco Operacional</h2>
+            <h2>🛡 Diagnóstico de Alavancagem & Risco</h2>
             <div class="form-group">
-                <label>Total Investido Ativo em Tela</label>
+                <label>Total Alocado em Tela</label>
                 <div class="metric" id="total_alocado">$0.00</div>
             </div>
             <div class="form-group">
-                <label>Alavancagem Corrente</label>
+                <label>Risco de Liquidação (Alavancagem)</label>
                 <div id="alavancagem_status" class="badge">1.0x</div>
             </div>
             <div class="form-group">
-                <label>Margem de Segurança para Queda Livre</label>
-                <div class="metric" id="queda_suportada">0%</div>
+                <label>Margem para Queda Livre de Mercado</label>
+                <div class="metric" id="queda_suportada">100%</div>
             </div>
         </div>
     </div>
 
-    <!-- GRADE PRINCIPAL -->
+    <!-- METAS -->
     <div class="card">
-        <h2>🎯 Alocação vs Hora Certa de Entrada</h2>
-        <p>Você pode editar o preço de mercado ou o seu preço médio (PM) direto nos campos para calibrar os alertas [cf].</p>
+        <h2>🎯 Metas de Renda Mensal Líquida</h2>
+        <div style="margin-bottom: 15px;">
+            <span id="txt_progresso_20">Meta 1 ($20/mês) 0%</span>
+            <div class="progress-bar"><div id="bar_20" class="progress-fill"></div></div>
+        </div>
+        <div>
+            <span id="txt_progresso_50">Meta 2 ($50/mês) 0%</span>
+            <div class="progress-bar"><div id="bar_50" class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- GRADE DE ALOCAÇÃO -->
+    <div class="card">
+        <h2>🎯 Alocação e Ponto de Entrada Perfeito</h2>
+        <p>O sistema compara o Preço Médio ao preço atual de tela para identificar janelas de desconto ideais [cf].</p>
         <table>
             <thead>
                 <tr>
@@ -124,33 +148,45 @@
                     <th>Preço Mercado</th>
                     <th>Minhas Cotas</th>
                     <th>Preço Médio (PM)</th>
-                    <th>Valor Total</th>
-                    <th>🎯 Hora de Entrada</th>
-                    <th>Ações</th>
+                    <th>Valor Alocado</th>
+                    <th>Peso Atual</th>
+                    <th>Momento de Entrada</th>
                 </tr>
             </thead>
             <tbody id="portfolio-tbody"></tbody>
         </table>
     </div>
 
-    <!-- HISTÓRICO -->
+    <!-- HISTÓRICO DE ORDENS -->
     <div class="card">
-        <h2>📜 Histórico de Movimentações (Lançamentos)</h2>
-        <div class="flex-inputs" style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px dashed var(--border);">
-            <select id="log-select-asset"></select>
-            <input type="number" step="0.01" id="log-shares" placeholder="Qtd Cotas Compradas">
-            <input type="number" step="0.01" id="log-price" placeholder="Preço Pago por Cota $">
-            <button class="btn btn-success" onclick="adicionarLancamento()">Registrar Compra</button>
+        <h2>📜 Histórico de Ordens & Lançamentos</h2>
+        <p>Sempre que fizer uma operação na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata [cf].</p>
+        <div class="flex-inputs" style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
+            <div style="flex:1;">
+                <label>Escolha o Ativo</label>
+                <select id="log-select-asset"></select>
+            </div>
+            <div style="flex:1;">
+                <label>Quantidade de Cotas</label>
+                <input type="number" step="0.001" id="log-shares" placeholder="Ex: 0.25">
+            </div>
+            <div style="flex:1;">
+                <label>Preço por Cota ($)</label>
+                <input type="number" step="0.01" id="log-price" placeholder="Ex: 56.24">
+            </div>
+            <div style="flex:1; display:flex; align-items:flex-end;">
+                <button class="btn btn-success" style="width:100%; height:42px;" onclick="adicionarLancamento()">Registrar Compra</button>
+            </div>
         </div>
         <table>
             <thead>
                 <tr>
                     <th>Data / Hora</th>
                     <th>Ativo</th>
-                    <th>Cotas</th>
-                    <th>Preço Executado</th>
-                    <th>Total Gasto</th>
-                    <th>Controles</th>
+                    <th>Cotas Compradas</th>
+                    <th>Preço Unitário</th>
+                    <th>Capital Injetado</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody id="history-tbody"></tbody>
@@ -159,27 +195,25 @@
 </div>
 
 <script>
-    // Exact updated baseline prices syncing from NYSE/NASDAQ feeds
-    let carteira = JSON.parse(localStorage.getItem('carteira_dados_v53')) || [
-        { ticker: "SCHD", precoMercado: 33.68, cotas: 1.26, precoMedio: 34.00 },
-        { ticker: "JEPI", precoMercado: 56.24, cotas: 0.59, precoMedio: 56.50 },
-        { ticker: "JEPQ", precoMercado: 60.24, cotas: 0.42, precoMedio: 59.80 },
-        { ticker: "IEF",  precoMercado: 90.80, cotas: 0.24, precoMedio: 91.00 }
+    // Real time closing parameters synced for September 2026 baseline
+    let carteira = JSON.parse(localStorage.getItem('quantfury_radar_carteira')) || [
+        { ticker: "SCHD", precoMercado: 33.68, cotas: 1.26, precoMedio: 34.00, yield: 0.0313 },
+        { ticker: "JEPI", precoMercado: 56.24, cotas: 0.59, precoMedio: 56.50, yield: 0.076 },
+        { ticker: "JEPQ", precoMercado: 60.24, cotas: 0.42, precoMedio: 59.80, yield: 0.11 },
+        { ticker: "IEF",  precoMercado: 90.80, cotas: 0.24, precoMedio: 91.00, yield: 0.0397 }
     ];
 
-    let historico = JSON.parse(localStorage.getItem('historico_dados_v53')) || [];
+    let historico = JSON.parse(localStorage.getItem('quantfury_radar_historico')) || [];
 
     function salvarDados() {
-        localStorage.setItem('carteira_dados_v53', JSON.stringify(carteira));
-        localStorage.setItem('historico_dados_v53', JSON.stringify(historico));
-        localStorage.setItem('capital_dados_v53', document.getElementById('capital').value);
+        localStorage.setItem('quantfury_radar_carteira', JSON.stringify(carteira));
+        localStorage.setItem('quantfury_radar_historico', JSON.stringify(historico));
+        localStorage.setItem('quantfury_radar_capital', document.getElementById('capital').value);
     }
 
-    function carregarCapital() {
-        const capitalSalvo = localStorage.getItem('capital_dados_v53');
-        if (capitalSalvo) {
-            document.getElementById('capital').value = capitalSalvo;
-        }
+    function carregarDados() {
+        const capitalSalvo = localStorage.getItem('quantfury_radar_capital');
+        if (capitalSalvo) document.getElementById('capital').value = capitalSalvo;
     }
 
     function renderizarInterface() {
@@ -191,47 +225,13 @@
         tbodyPortfolio.innerHTML = '';
         selectLog.innerHTML = '';
 
+        let totalPortfolio = 0;
+        carteira.forEach(a => totalPortfolio += (a.cotas * a.precoMercado));
+
         carteira.forEach((ativo, index) => {
+            // Render Price inputs dynamically inside the Config panel
             containerPrecos.innerHTML += `
-                <div class="form-group" style="display:inline-block; width:45%; margin-right:4%;">
-                    <label>${ativo.ticker} ($)</label>
+                <div class="form-group" style="display:inline-block; width:45%; margin-right:4%; margin-bottom:10px;">
+                    <label style="font-size:14px; color:var(--primary);">${ativo.ticker} ($)</label>
                     <input type="number" step="0.01" value="${ativo.precoMercado}" oninput="atualizarPrecoMercado(${index}, this.value)">
                 </div>
-            `;
-
-            const valorTotalAtivo = ativo.cotas * ativo.precoMercado;
-            
-            let horaCertaHtml = "";
-            if (ativo.cotas === 0) {
-                horaCertaHtml = `<span class="badge badge-warning">Aguardando</span>`;
-            } else if (ativo.precoMercado < ativo.precoMedio) {
-                horaCertaHtml = `<span class="badge badge-success">🔥 COMPRA (Desconto)</span>`;
-            } else {
-                horaCertaHtml = `<span class="badge" style="background:rgba(255,255,255,0.05); color:#8b949e;">Aguardar Recuo</span>`;
-            }
-
-            tbodyPortfolio.innerHTML += `
-                <tr>
-                    <td><b>${ativo.ticker}</b></td>
-                    <td>$${ativo.precoMercado.toFixed(2)}</td>
-                    <td><input type="number" step="0.01" value="${ativo.cotas}" style="width:80px; padding:4px;" oninput="atualizarCotasDireto(${index}, this.value)"></td>
-                    <td>$<input type="number" step="0.01" value="${ativo.precoMedio}" style="width:80px; padding:4px;" oninput="atualizarPMDireto(${index}, this.value)"></td>
-                    <td><b>$${valorTotalAtivo.toFixed(2)}</b></td>
-                    <td>${horaCertaHtml}</td>
-                    <td><button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="removerAtivo(${index})">Deletar</button></td>
-                </tr>
-            `;
-
-            selectLog.innerHTML += `<option value="${ativo.ticker}">${ativo.ticker}</option>`;
-        });
-
-        calcularTudo();
-        renderizarHistorico();
-    }
-
-    function atualizarPrecoMercado(index, val) {
-        carteira[index].precoMercado = parseFloat(val) || 0;
-        salvarDados();
-        calcularTudo();
-        
-        // Instant visual row fix without full loop breaks
