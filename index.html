@@ -90,23 +90,23 @@
 
 <div class="container">
     <h1>📊 Quantfury Dividend Radar & Risk Hub</h1>
-    <p>O jeito ideal e profissional de gerenciar renda passiva sem correr riscos de liquidação [cf].</p>
+    <p>O jeito ideal e profissional de gerenciar renda passiva sem correr riscos de liquidação.</p>
     
     <button class="btn btn-danger" onclick="resetarAplicativo()">⚠ Resetar Aplicativo</button>
 
     <div class="grid">
-        <!-- CONFIGURAÇÕES -->
+        <!-- CONFIGURAÇÕES DA CONTA & MERCADO -->
         <div class="card">
             <h2>⚙ Configurações da Conta & Mercado</h2>
             <div class="form-group">
-                <label>Garantia Depositada em Dólar (USD Cash)</label>
+                <label>Garantia Deposita em Dólar (USD Cash)</label>
                 <input type="number" id="capital" value="150" oninput="salvarDados(); calcularTudo();">
             </div>
             <h3>Preços de Mercado Atuais ($)</h3>
             <div id="market-prices-container"></div>
         </div>
 
-        <!-- DIAGNÓSTICO -->
+        <!-- DIAGNÓSTICO DE ALAVANCAGEM & RISCO -->
         <div class="card">
             <h2>🛡 Diagnóstico de Alavancagem & Risco</h2>
             <div class="form-group">
@@ -114,7 +114,7 @@
                 <div class="metric" id="total_alocado">$0.00</div>
             </div>
             <div class="form-group">
-                <label>Risco de Liquidação (Alavancagem)</label>
+                <label>Risco de Liquidação</label>
                 <div id="alavancagem_status" class="badge">1.0x</div>
             </div>
             <div class="form-group">
@@ -124,7 +124,7 @@
         </div>
     </div>
 
-    <!-- METAS -->
+    <!-- METAS DE RENDA MENSAL LÍQUIDA -->
     <div class="card">
         <h2>🎯 Metas de Renda Mensal Líquida</h2>
         <div style="margin-bottom: 15px;">
@@ -137,10 +137,10 @@
         </div>
     </div>
 
-    <!-- GRADE DE ALOCAÇÃO -->
+    <!-- ALOCAÇÃO E PONTO DE ENTRADA PERFEITO -->
     <div class="card">
         <h2>🎯 Alocação e Ponto de Entrada Perfeito</h2>
-        <p>O sistema compara o Preço Médio ao preço atual de tela para identificar janelas de desconto ideais [cf].</p>
+        <p>O sistema compara o Preço Médio ao preço atual de tela para identificar janelas de desconto ideais.</p>
         <table>
             <thead>
                 <tr>
@@ -157,10 +157,10 @@
         </table>
     </div>
 
-    <!-- HISTÓRICO DE ORDENS -->
+    <!-- HISTÓRICO DE ORDENS & LANÇAMENTOS -->
     <div class="card">
         <h2>📜 Histórico de Ordens & Lançamentos</h2>
-        <p>Sempre que fizer uma operation na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata [cf].</p>
+        <p>Sempre que fizer uma operação na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata.</p>
         <div class="flex-inputs" style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
             <div style="flex:1;">
                 <label>Escolha o Ativo</label>
@@ -195,24 +195,24 @@
 </div>
 
 <script>
-    // Configurações e preços oficiais de hoje carregados perfeitamente
-    let carteira = JSON.parse(localStorage.getItem('radar_hub_carteira')) || [
+    // Inicialização idêntica com correções de escopo aplicadas
+    let carteira = JSON.parse(localStorage.getItem('radar_hub_carteira_v4')) || [
         { ticker: "SCHD", precoMercado: 33.68, cotas: 1.26, precoMedio: 34.00, yield: 0.0313 },
         { ticker: "JEPI", precoMercado: 56.24, cotas: 0.59, precoMedio: 56.50, yield: 0.076 },
         { ticker: "JEPQ", precoMercado: 60.24, cotas: 0.42, precoMedio: 59.80, yield: 0.11 },
         { ticker: "IEF",  precoMercado: 90.80, cotas: 0.24, precoMedio: 91.00, yield: 0.0397 }
     ];
 
-    let historico = JSON.parse(localStorage.getItem('radar_hub_historico')) || [];
+    let historico = JSON.parse(localStorage.getItem('radar_hub_historico_v4')) || [];
 
     function salvarDados() {
-        localStorage.setItem('radar_hub_carteira', JSON.stringify(carteira));
-        localStorage.setItem('radar_hub_historico', JSON.stringify(historico));
-        localStorage.setItem('radar_hub_capital', document.getElementById('capital').value);
+        localStorage.setItem('radar_hub_carteira_v4', JSON.stringify(carteira));
+        localStorage.setItem('radar_hub_historico_v4', JSON.stringify(historico));
+        localStorage.setItem('radar_hub_capital_v4', document.getElementById('capital').value);
     }
 
     function carregarDados() {
-        const capitalSalvo = localStorage.getItem('radar_hub_capital');
+        const capitalSalvo = localStorage.getItem('radar_hub_capital_v4');
         if (capitalSalvo) document.getElementById('capital').value = capitalSalvo;
     }
 
@@ -229,11 +229,8 @@
         carteira.forEach(a => totalPortfolio += (a.cotas * a.precoMercado));
 
         carteira.forEach((ativo, index) => {
-            // Sincroniza as caixas de preço do painel superior
             containerPrecos.innerHTML += `
                 <div class="form-group" style="display:inline-block; width:45%; margin-right:4%; margin-bottom:10px;">
                     <label style="font-size:14px; color:var(--primary);">${ativo.ticker} ($)</label>
                     <input type="number" step="0.01" value="${ativo.precoMercado}" oninput="atualizarPrecoMercado(${index}, this.value)">
                 </div>
-            `;
-
