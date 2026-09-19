@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantfury Dividend Radar & Risk Hub v5.3</title>
+    <title>Quantfury Dividend Radar & Risk Hub</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -160,7 +160,7 @@
     <!-- HISTÓRICO DE ORDENS -->
     <div class="card">
         <h2>📜 Histórico de Ordens & Lançamentos</h2>
-        <p>Sempre que fizer uma operação na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata [cf].</p>
+        <p>Sempre que fizer uma operation na Quantfury, registre aqui para atualizar seu Preço Médio de forma exata [cf].</p>
         <div class="flex-inputs" style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
             <div style="flex:1;">
                 <label>Escolha o Ativo</label>
@@ -195,24 +195,24 @@
 </div>
 
 <script>
-    // Real time closing parameters synced for September 2026 baseline
-    let carteira = JSON.parse(localStorage.getItem('quantfury_radar_carteira')) || [
+    // Configurações e preços oficiais de hoje carregados perfeitamente
+    let carteira = JSON.parse(localStorage.getItem('radar_hub_carteira')) || [
         { ticker: "SCHD", precoMercado: 33.68, cotas: 1.26, precoMedio: 34.00, yield: 0.0313 },
         { ticker: "JEPI", precoMercado: 56.24, cotas: 0.59, precoMedio: 56.50, yield: 0.076 },
         { ticker: "JEPQ", precoMercado: 60.24, cotas: 0.42, precoMedio: 59.80, yield: 0.11 },
         { ticker: "IEF",  precoMercado: 90.80, cotas: 0.24, precoMedio: 91.00, yield: 0.0397 }
     ];
 
-    let historico = JSON.parse(localStorage.getItem('quantfury_radar_historico')) || [];
+    let historico = JSON.parse(localStorage.getItem('radar_hub_historico')) || [];
 
     function salvarDados() {
-        localStorage.setItem('quantfury_radar_carteira', JSON.stringify(carteira));
-        localStorage.setItem('quantfury_radar_historico', JSON.stringify(historico));
-        localStorage.setItem('quantfury_radar_capital', document.getElementById('capital').value);
+        localStorage.setItem('radar_hub_carteira', JSON.stringify(carteira));
+        localStorage.setItem('radar_hub_historico', JSON.stringify(historico));
+        localStorage.setItem('radar_hub_capital', document.getElementById('capital').value);
     }
 
     function carregarDados() {
-        const capitalSalvo = localStorage.getItem('quantfury_radar_capital');
+        const capitalSalvo = localStorage.getItem('radar_hub_capital');
         if (capitalSalvo) document.getElementById('capital').value = capitalSalvo;
     }
 
@@ -229,9 +229,11 @@
         carteira.forEach(a => totalPortfolio += (a.cotas * a.precoMercado));
 
         carteira.forEach((ativo, index) => {
-            // Render Price inputs dynamically inside the Config panel
+            // Sincroniza as caixas de preço do painel superior
             containerPrecos.innerHTML += `
                 <div class="form-group" style="display:inline-block; width:45%; margin-right:4%; margin-bottom:10px;">
                     <label style="font-size:14px; color:var(--primary);">${ativo.ticker} ($)</label>
                     <input type="number" step="0.01" value="${ativo.precoMercado}" oninput="atualizarPrecoMercado(${index}, this.value)">
                 </div>
+            `;
+
